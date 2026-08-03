@@ -152,3 +152,13 @@ comparison against measured rather than modelled SIF is the next step.
 
 The radiation coefficients are fitted at one mid-latitude continental site and
 are an extrapolation elsewhere.
+
+## Licensing
+
+`simonefatichi/TeC_Source_Code` carries no LICENSE file, so the upstream code is
+all-rights-reserved by default. Nothing here relicenses it. The files added by
+this contribution — `SIF_Escape.m`, `SIF_Output.m`, `Radiation_Partition.m`,
+`Radiation_Partition_Coeff_Zurich.m`, `calibrate_hour_offset.m`, and everything
+under `Validation/` and `Forcing_Prep/` — are offered to the T&C authors on
+whatever terms they apply to the rest of the repository. If a license is added
+upstream these follow it.
