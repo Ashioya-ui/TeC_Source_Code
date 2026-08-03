@@ -55,8 +55,12 @@ def photo_sif(IPAR_W, Ca, Ts, Ds, Pre, Vmax=55.0, CT=3, a1=6.0, go=0.01,
     F755 = np.where(IPAR > 0, SIF/k, 0.0)
     return np.maximum(A, 0.0), np.maximum(An, 0.0), np.maximum(F755, 0.0)
 
-def escape(LAI, Kopt=0.5, theta_v=0.0, omega=0.87, G=0.5):
-    Kv = G/max(np.cos(theta_v), 1e-3)*np.sqrt(max(1-omega, 1e-6))
+def escape(LAI, Kopt=0.5, theta_v=0.0, omega=0.87, G=0.5, p_recoll=0.6):
+    """Escape fractions. omega_eff = omega*(1-p_recoll): a scattered photon is
+    redirected isotropically, so the two-stream albedo over-credits directional
+    escape. p_recoll = 1 recovers pure absorption."""
+    omega_eff = omega*min(max(p_recoll, 0.0), 1.0)
+    Kv = G/max(np.cos(theta_v), 1e-3)*np.sqrt(max(1-omega_eff, 1e-6))
     Ks = max(Kopt, 1e-6); Ksv = Ks + Kv
     As_e = (1-np.exp(-Ksv*LAI))/Ksv; As_t = (1-np.exp(-Ks*LAI))/Ks
     Ah_e = (1-np.exp(-Kv*LAI))/Kv - As_e; Ah_t = LAI - As_t

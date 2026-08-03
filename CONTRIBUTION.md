@@ -41,33 +41,57 @@ Against Zhang, Joiner, Alemohammad, Zhou & Gentine (2018), *Biogeosciences* 15,
 
 | | modelled, Zurich, Vmax=55 | observed, 40 towers |
 |---|---|---|
-| slope (g C m⁻² d⁻¹ per mW m⁻² nm⁻¹ sr⁻¹) | **10.29** | 11.91 – 68.59 |
-| r² | **0.896** | 0.01 – 0.93, median 0.64 |
-| RMSE (g C m⁻² d⁻¹) | **1.86** | mean 1.67 |
+| slope (g C m⁻² d⁻¹ per mW m⁻² nm⁻¹ sr⁻¹) | **12.70** | 11.91 – 68.59 |
+| r² | **0.892** | 0.01 – 0.93, median 0.64 |
+| RMSE (g C m⁻² d⁻¹) | **1.77** | mean 1.67 |
 
-The slope is 14% below the lower bound; r² sits at the top of the observed range
-and RMSE is comparable. Nothing in the chain is fitted to this relationship, so
-it is a prediction, not a calibration.
+Inside the observed band, with r² near the top of the observed range and RMSE
+close to the reported mean. Nothing in the chain is fitted to this relationship.
 
 ```
-python Validation/benchmark_sif_gpp.py --lai 4 --vmax 55
+python Validation/benchmark_sif_gpp.py          # site phenology, p_recoll = 0.6
 ```
+
+### Two corrections made during benchmarking
+
+**The two-stream albedo is the wrong one for directional escape.** A first
+version reduced the viewing extinction by `sqrt(1-omega_l)` with `omega_l =
+0.87`. That is the two-stream result for a *diffuse flux* propagating through the
+medium; escape toward a sensor is *directional*, and a scattered photon is
+redirected roughly isotropically, so about half of it goes back down and is lost.
+Using the full albedo over-credits escape — bulk 0.753 at LAI 3.5, giving a slope
+of 10.27, below the observed band. Recollision theory (Knyazikhin et al. 1998;
+Stenberg 2007) gives `omega_eff = omega_l*(1 - p_recoll)`, with `p_recoll` the
+probability a scattered photon strikes another leaf, 0.5–0.7 for a closed canopy.
+At `p_recoll = 0.6` the bulk escape is 0.553 and the slope 12.70. `p_recoll = 1`
+recovers pure absorption.
+
+**Constant LAI contradicts the site's own parameters.** `MOD_PARAM_ZURICH_SMA.m`
+sets `aSE_L = 2` (grass), `Tlo_L = 0.0`, `LAI_min_L = 0.1`, `dmg_L = 20`. Holding
+LAI at 4 year-round is wrong by a factor of forty in dormancy.
+`Validation/phenology.py` drives LAI from those parameters (0.10 in December to
+3.50 in summer). This changed RMSE from 1.86 to 1.77 but barely moved the slope
+(10.29 → 10.27), because when LAI collapses GPP and SIF fall together and those
+days sit near the origin without levering the fit. It is included because it is
+correct, not because it was the fix.
 
 ### The result for cal/val
 
 The slope is a strong function of `Vmax` and a weak function of LAI:
 
-| Vmax | slope | r² | | LAI | slope | bulk fesc |
-|---|---|---|---|---|---|---|
-| 20 | 4.66 | 0.801 | | 1 | 7.37 | 0.915 |
-| 40 | 8.25 | 0.866 | | 2 | 7.66 | 0.840 |
-| 55 | 10.29 | 0.896 | | 4 | 8.08 | 0.712 |
-| 80 | 13.19 | 0.930 | | 6 | 8.40 | 0.611 |
-| 120 | 17.14 | 0.961 | | 8 | 8.63 | 0.529 |
+| Vmax | slope | r² | RMSE | verdict |
+|---|---|---|---|---|
+| 20 | 5.66 | 0.786 | 1.20 | outside |
+| 30 | 8.08 | 0.829 | 1.49 | outside |
+| 40 | 10.13 | 0.859 | 1.66 | outside |
+| **55** | **12.70** | **0.892** | **1.77** | **in range** |
+| 65 | 14.22 | 0.908 | 1.79 | in range |
+| 80 | 16.33 | 0.927 | 1.77 | in range |
+| 120 | 21.18 | 0.959 | 1.58 | in range |
 
-LAI barely moves it because the escape fraction falls (0.915 → 0.529) roughly in
-step with the GPP increase and the two largely cancel. `Vmax` moves it 3.7× over
-a 6× range.
+LAI barely moves it because the escape fraction falls roughly in step with the
+GPP increase and the two largely cancel. `Vmax` moves it 3.7× over a 6× range,
+and the model enters the observed band at `Vmax` ≈ 47.
 
 Two consequences. **SIF alone cannot constrain GPP without independent knowledge
 of `Vmax`** — an apparent between-site slope difference may be a `Vmax`
@@ -109,10 +133,22 @@ radiation variables falls **48.9%**.
 
 ## Limits
 
+`p_recoll` is the one free parameter in the escape module. It is bounded by
+theory to 0.5–0.7 for a closed canopy and the benchmark is satisfied across that
+whole interval (slope 11.62 at 0.5 through 13.59 at 0.7), so the result does not
+depend on the choice within its physical range. It should be derived from canopy
+structure rather than prescribed; recollision probability is computable from LAI
+and the leaf angle distribution, both of which T&C already carries.
+
 `Validation/chain.py` is a transcription of the MATLAB for benchmarking, not the
-authoritative implementation. The escape formulation is single-scattering with a
-two-stream albedo correction; a full treatment needs SCOPE-style radiative
-transfer. The benchmark is one site, one PFT, constant LAI, against modelled
-rather than measured SIF — a tower with a co-located spectrometer (DE-Hai) would
-test it properly. The radiation coefficients are fitted at one mid-latitude
-continental site and are an extrapolation elsewhere.
+authoritative implementation, and should be replaced by a direct call into
+`photosynthesis_biochemical.m` once run inside MATLAB.
+
+The benchmark is one site, one PFT, and against *modelled* SIF — the Zurich
+forcing carries no fluorescence measurement, so agreement with the 40-tower band
+tests the chain's magnitude and shape, not its accuracy at this site. A tower
+with a co-located spectrometer (DE-Hai) is the test that settles it, and the
+comparison against measured rather than modelled SIF is the next step.
+
+The radiation coefficients are fitted at one mid-latitude continental site and
+are an extrapolation elsewhere.
