@@ -86,7 +86,7 @@ The slope is a strong function of `Vmax` and a weak function of LAI:
 | 40 | 10.85 | 0.856 | 1.68 | outside |
 | **55** | **13.60** | **0.888** | **1.80** | **in range** |
 | 65 | 15.23 | 0.905 | 1.82 | in range |
-| 80 | 16.33 | 0.927 | 1.80 | in range |
+| 80 | 17.49 | 0.927 | 1.80 | in range |
 | 120 | 22.68 | 0.957 | 1.63 | in range |
 
 LAI barely moves it because the escape fraction falls roughly in step with the
@@ -135,7 +135,7 @@ radiation variables falls **48.9%**.
 
 `p_recoll` is the one free parameter in the escape module. It is bounded by
 theory to 0.5–0.7 for a closed canopy and the benchmark is satisfied across that
-whole interval (slope 11.62 at 0.5 through 13.59 at 0.7), so the result does not
+whole interval (slope 12.6 at 0.5 through 14.7 at 0.7), so the result does not
 depend on the choice within its physical range. It should be derived from canopy
 structure rather than prescribed; recollision probability is computable from LAI
 and the leaf angle distribution, both of which T&C already carries.
