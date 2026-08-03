@@ -41,7 +41,7 @@ def daily(forcing, LAI=None, Vmax=55.0, Kopt=0.5, omega=0.87, Ca=400.0, p_recoll
     A_s,_,F_s = photo_sif(np.where(valid, PAR_sun, 0), Ca, Tc, Ds, Pre, Vmax=Vmax)
     A_h,_,F_h = photo_sif(np.where(valid, PARD, 0),    Ca, Tc, Ds, Pre, Vmax=Vmax)
     A_s,A_h,F_s,F_h = [np.where(lit, x, 0.0) for x in (A_s,A_h,F_s,F_h)]
-    om_eff = omega*min(max(p_recoll,0.0),1.0)
+    om_eff = omega*(1.0 - min(max(p_recoll,0.0),1.0))
     Kv = 0.5*np.sqrt(max(1-om_eff,1e-6)); Ksv = Kopt + Kv
     As = (1-np.exp(-Kopt*LAI))/Kopt
     As_e = (1-np.exp(-Ksv*LAI))/Ksv

@@ -136,7 +136,7 @@ def main():
     A_s,_,F_s = photo_sif(np.where(lit, PARB/np.maximum(Fsun,1e-6)+PARD, 0), 400., Tc, Dsc, Prc, Vmax=a.vmax)
     A_h,_,F_h = photo_sif(np.where(lit, PARD, 0), 400., Tc, Dsc, Prc, Vmax=a.vmax)
     A_s,A_h,F_s,F_h = [np.where(lit, x, 0.0) for x in (A_s,A_h,F_s,F_h)]
-    om = 0.87*min(max(a.precoll,0),1); Kv = 0.5*np.sqrt(max(1-om,1e-6)); Ksv = a.kopt+Kv
+    om = 0.87*(1.0 - min(max(a.precoll,0),1)); Kv = 0.5*np.sqrt(max(1-om,1e-6)); Ksv = a.kopt+Kv
     As = (1-np.exp(-a.kopt*LAI))/a.kopt; As_e = (1-np.exp(-Ksv*LAI))/Ksv
     Ah = LAI-As; Ah_e = (1-np.exp(-Kv*LAI))/Kv - As_e
     fs = As_e/np.maximum(As,1e-9); fh = Ah_e/np.maximum(Ah,1e-9)
